@@ -1,0 +1,538 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Roue des Morceaux - Les Tambours d'Ivry</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Fredoka+One:wght@400&family=Open+Sans:wght@600&display=swap');
+        
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Open Sans', sans-serif;
+            background: linear-gradient(135deg, #1a1a1a 0%, #2d1810 50%, #1a1a1a 100%);
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            color: white;
+            overflow-x: hidden;
+        }
+
+        .header {
+            text-align: center;
+            margin: 20px 0;
+        }
+
+        .title {
+            font-family: 'Fredoka One', cursive;
+            font-size: 2.5rem;
+            color: #FFD700;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.5);
+            margin-bottom: 10px;
+        }
+
+        .subtitle {
+            font-size: 1.2rem;
+            color: #ff4444;
+            font-weight: 600;
+        }
+
+        .main-container {
+            display: flex;
+            gap: 40px;
+            align-items: flex-start;
+            flex-wrap: wrap;
+            justify-content: center;
+            max-width: 1200px;
+            margin: 20px;
+        }
+
+        .wheel-container {
+            position: relative;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        .wheel-wrapper {
+            position: relative;
+            width: 400px;
+            height: 400px;
+        }
+
+        .wheel {
+            width: 400px;
+            height: 400px;
+            border-radius: 50%;
+            position: relative;
+            transition: transform 3s cubic-bezier(0.25, 0.1, 0.25, 1);
+            box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+            border: 8px solid #FFD700;
+        }
+
+        .wheel-section {
+            position: absolute;
+            width: 50%;
+            height: 50%;
+            transform-origin: 100% 100%;
+            overflow: hidden;
+            font-size: 12px;
+            font-weight: 600;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            text-align: center;
+            color: white;
+            text-shadow: 1px 1px 2px rgba(0,0,0,0.7);
+            cursor: pointer;
+        }
+
+        .wheel-section:nth-child(odd) {
+            background: linear-gradient(45deg, #ff4444, #ff6666);
+        }
+
+        .wheel-section:nth-child(even) {
+            background: linear-gradient(45deg, #FFD700, #FFED4E);
+            color: #333;
+            text-shadow: 1px 1px 2px rgba(255,255,255,0.7);
+        }
+
+        .wheel-section:nth-child(4n+1) {
+            background: linear-gradient(45deg, #ff4444, #ff6666);
+        }
+
+        .wheel-section:nth-child(4n+2) {
+            background: linear-gradient(45deg, #333, #555);
+        }
+
+        .wheel-section:nth-child(4n+3) {
+            background: linear-gradient(45deg, #FFD700, #FFED4E);
+            color: #333;
+            text-shadow: 1px 1px 2px rgba(255,255,255,0.7);
+        }
+
+        .wheel-section:nth-child(4n) {
+            background: linear-gradient(45deg, #ffffff, #f0f0f0);
+            color: #333;
+            text-shadow: 1px 1px 2px rgba(255,255,255,0.7);
+        }
+
+        .wheel-pointer {
+            position: absolute;
+            top: -10px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 0;
+            height: 0;
+            border-left: 15px solid transparent;
+            border-right: 15px solid transparent;
+            border-top: 30px solid #ff4444;
+            z-index: 10;
+            filter: drop-shadow(0 2px 4px rgba(0,0,0,0.3));
+        }
+
+        .spin-button {
+            margin-top: 30px;
+            padding: 15px 40px;
+            font-size: 1.5rem;
+            font-family: 'Fredoka One', cursive;
+            background: linear-gradient(135deg, #ff4444, #ff6666);
+            color: white;
+            border: none;
+            border-radius: 50px;
+            cursor: pointer;
+            box-shadow: 0 5px 15px rgba(255,68,68,0.4);
+            transition: all 0.3s ease;
+            text-transform: uppercase;
+        }
+
+        .spin-button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(255,68,68,0.6);
+        }
+
+        .spin-button:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        .results-panel {
+            background: rgba(255,255,255,0.1);
+            backdrop-filter: blur(10px);
+            border-radius: 20px;
+            padding: 30px;
+            min-width: 350px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+            border: 2px solid rgba(255,215,0,0.3);
+        }
+
+        .current-song {
+            text-align: center;
+            margin-bottom: 30px;
+        }
+
+        .current-song h3 {
+            font-family: 'Fredoka One', cursive;
+            color: #FFD700;
+            font-size: 1.5rem;
+            margin-bottom: 15px;
+        }
+
+        .song-display {
+            background: linear-gradient(135deg, #ff4444, #ff6666);
+            color: white;
+            padding: 20px;
+            border-radius: 15px;
+            font-size: 1.3rem;
+            font-weight: 600;
+            text-align: center;
+            min-height: 60px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 0 5px 15px rgba(255,68,68,0.3);
+        }
+
+        .repeat-warning {
+            background: linear-gradient(135deg, #FFD700, #FFED4E);
+            color: #333;
+            margin-top: 10px;
+            padding: 10px;
+            border-radius: 10px;
+            font-size: 0.9rem;
+            text-align: center;
+            animation: pulse 2s infinite;
+        }
+
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.7; }
+        }
+
+        .history {
+            margin-top: 20px;
+        }
+
+        .history h3 {
+            font-family: 'Fredoka One', cursive;
+            color: #FFD700;
+            font-size: 1.2rem;
+            margin-bottom: 15px;
+        }
+
+        .history-list {
+            max-height: 200px;
+            overflow-y: auto;
+        }
+
+        .history-item {
+            background: rgba(255,255,255,0.1);
+            margin-bottom: 8px;
+            padding: 10px 15px;
+            border-radius: 10px;
+            font-size: 0.9rem;
+            border-left: 4px solid #ff4444;
+        }
+
+        .floating-notes {
+            position: absolute;
+            font-size: 2rem;
+            opacity: 0;
+            pointer-events: none;
+            z-index: 5;
+        }
+
+        .note-animation {
+            animation: floatUp 2s ease-out forwards;
+        }
+
+        @keyframes floatUp {
+            0% {
+                opacity: 1;
+                transform: translateY(0) rotate(0deg);
+            }
+            100% {
+                opacity: 0;
+                transform: translateY(-100px) rotate(360deg);
+            }
+        }
+
+        @media (max-width: 768px) {
+            .main-container {
+                flex-direction: column;
+                align-items: center;
+            }
+
+            .wheel-wrapper {
+                width: 300px;
+                height: 300px;
+            }
+
+            .wheel {
+                width: 300px;
+                height: 300px;
+            }
+
+            .title {
+                font-size: 2rem;
+            }
+
+            .results-panel {
+                min-width: 300px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <h1 class="title">🥁 Roue des Morceaux 🥁</h1>
+        <p class="subtitle">Les Tambours d'Ivry</p>
+    </div>
+
+    <div class="main-container">
+        <div class="wheel-container">
+            <div class="wheel-wrapper">
+                <div class="wheel-pointer"></div>
+                <div class="wheel" id="wheel"></div>
+            </div>
+            <button class="spin-button" id="spinBtn">Lancer la roue ! 🎵</button>
+        </div>
+
+        <div class="results-panel">
+            <div class="current-song">
+                <h3>🎶 Morceau sélectionné</h3>
+                <div class="song-display" id="currentSong">
+                    Cliquez sur la roue pour commencer !
+                </div>
+                <div class="repeat-warning" id="repeatWarning" style="display: none;">
+                    ⚠️ Ce morceau vient d'être joué ! Relancez la roue ?
+                </div>
+            </div>
+
+            <div class="history">
+                <h3>📝 Historique</h3>
+                <div class="history-list" id="historyList">
+                    <p style="text-align: center; opacity: 0.7;">Aucun morceau joué pour le moment</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Liste des morceaux (exemples)
+        const songs = [
+            "Samba Reggae", "Axé Bahia", "Funk Carioca", "Bossa Nova Batida",
+            "Capoeira Rythm", "Rio Carnival", "Maracatu", "Frevo Pernambuco",
+            "Lambada Beat", "Tropicalia", "Pagode Samba", "Bahia Groove",
+            "Forró do Norte", "Candomblé", "Afro House", "Baterias Unidos",
+            "Escola de Samba", "Bloco Afro", "Percussion Fire", "Ritmo Quente",
+            "Drums of Joy", "Brazilian Soul", "Batucada Louca", "Festa Rhythm",
+            "Carnaval Beat", "Samba de Roda", "Timbau Solo", "Repique Funk",
+            "Surdo Power", "Tamborim Magic"
+        ];
+
+        let currentRotation = 0;
+        let spinning = false;
+        let history = [];
+        let lastSelected = null;
+
+        const wheel = document.getElementById('wheel');
+        const spinBtn = document.getElementById('spinBtn');
+        const currentSong = document.getElementById('currentSong');
+        const historyList = document.getElementById('historyList');
+        const repeatWarning = document.getElementById('repeatWarning');
+
+        // Créer les sections de la roue
+        function createWheel() {
+            const sectionAngle = 360 / songs.length;
+            
+            songs.forEach((song, index) => {
+                const section = document.createElement('div');
+                section.className = 'wheel-section';
+                section.style.transform = `rotate(${index * sectionAngle}deg)`;
+                section.textContent = song;
+                
+                // Ajuster la position du texte
+                const textSpan = document.createElement('span');
+                textSpan.textContent = song;
+                textSpan.style.transform = `rotate(${-index * sectionAngle + sectionAngle/2}deg)`;
+                textSpan.style.display = 'block';
+                textSpan.style.marginTop = '20px';
+                
+                section.innerHTML = '';
+                section.appendChild(textSpan);
+                wheel.appendChild(section);
+            });
+        }
+
+        // Faire tourner la roue
+        function spinWheel() {
+            if (spinning) return;
+            
+            spinning = true;
+            spinBtn.disabled = true;
+            repeatWarning.style.display = 'none';
+            
+            // Animation des notes musicales
+            createMusicNotes();
+            
+            // Rotation aléatoire (5-10 tours + position finale)
+            const spins = Math.floor(Math.random() * 6) + 5;
+            const finalAngle = Math.floor(Math.random() * 360);
+            const totalRotation = spins * 360 + finalAngle;
+            
+            currentRotation += totalRotation;
+            wheel.style.transform = `rotate(${currentRotation}deg)`;
+            
+            // Son de rotation (simulation avec des bips)
+            playSpinSound();
+            
+            setTimeout(() => {
+                const selectedIndex = Math.floor(((360 - (currentRotation % 360)) / 360) * songs.length);
+                const selectedSong = songs[selectedIndex];
+                
+                displayResult(selectedSong);
+                spinning = false;
+                spinBtn.disabled = false;
+            }, 3000);
+        }
+
+        // Afficher le résultat
+        function displayResult(song) {
+            currentSong.textContent = song;
+            
+            // Vérifier si c'est une répétition
+            if (lastSelected === song && history.length > 0) {
+                repeatWarning.style.display = 'block';
+            } else {
+                repeatWarning.style.display = 'none';
+            }
+            
+            // Ajouter à l'historique
+            const now = new Date();
+            const time = now.toLocaleTimeString('fr-FR', { 
+                hour: '2-digit', 
+                minute: '2-digit' 
+            });
+            
+            history.unshift({ song, time });
+            if (history.length > 10) history.pop(); // Garder seulement les 10 derniers
+            
+            updateHistoryDisplay();
+            lastSelected = song;
+            
+            // Son de victoire
+            playResultSound();
+        }
+
+        // Mettre à jour l'affichage de l'historique
+        function updateHistoryDisplay() {
+            if (history.length === 0) {
+                historyList.innerHTML = '<p style="text-align: center; opacity: 0.7;">Aucun morceau joué pour le moment</p>';
+                return;
+            }
+            
+            historyList.innerHTML = history.map((item, index) => 
+                `<div class="history-item">
+                    <strong>${index + 1}.</strong> ${item.song} <small>(${item.time})</small>
+                </div>`
+            ).join('');
+        }
+
+        // Créer des notes musicales animées
+        function createMusicNotes() {
+            const notes = ['♪', '♫', '♬', '♩', '♭', '♯'];
+            
+            for (let i = 0; i < 8; i++) {
+                setTimeout(() => {
+                    const note = document.createElement('div');
+                    note.className = 'floating-notes';
+                    note.textContent = notes[Math.floor(Math.random() * notes.length)];
+                    
+                    const angle = Math.random() * Math.PI * 2;
+                    const distance = 150 + Math.random() * 100;
+                    const x = 200 + Math.cos(angle) * distance;
+                    const y = 200 + Math.sin(angle) * distance;
+                    
+                    note.style.left = x + 'px';
+                    note.style.top = y + 'px';
+                    note.style.color = ['#ff4444', '#FFD700', '#ffffff'][Math.floor(Math.random() * 3)];
+                    
+                    wheel.parentElement.appendChild(note);
+                    note.classList.add('note-animation');
+                    
+                    setTimeout(() => note.remove(), 2000);
+                }, i * 200);
+            }
+        }
+
+        // Sons simulés
+        function playSpinSound() {
+            // Simulation d'un son de rotation avec des bips courts
+            const audioContext = new (window.AudioContext || window.webkitAudioContext)();
+            
+            for (let i = 0; i < 20; i++) {
+                setTimeout(() => {
+                    const oscillator = audioContext.createOscillator();
+                    const gainNode = audioContext.createGain();
+                    
+                    oscillator.connect(gainNode);
+                    gainNode.connect(audioContext.destination);
+                    
+                    oscillator.frequency.setValueAtTime(200 + Math.random() * 400, audioContext.currentTime);
+                    oscillator.type = 'square';
+                    
+                    gainNode.gain.setValueAtTime(0.1, audioContext.currentTime);
+                    gainNode.gain.exponentialRampToValueAtTime(0.01, audioContext.currentTime + 0.1);
+                    
+                    oscillator.start();
+                    oscillator.stop(audioContext.currentTime + 0.1);
+                }, i * 150);
+            }
+        }
+
+        function playResultSound() {
+            // Son de victoire
+            const audioContext = new (window.AudioContext || window.webkitAudioContext)();
+            const notes = [262, 330, 392, 523]; // Do, Mi, Sol, Do octave
+            
+            notes.forEach((freq, index) => {
+                setTimeout(() => {
+                    const oscillator = audioContext.createOscillator();
+                    const gainNode = audioContext.createGain();
+                    
+                    oscillator.connect(gainNode);
+                    gainNode.connect(audioContext.destination);
+                    
+                    oscillator.frequency.setValueAtTime(freq, audioContext.currentTime);
+                    oscillator.type = 'sine';
+                    
+                    gainNode.gain.setValueAtTime(0.2, audioContext.currentTime);
+                    gainNode.gain.exponentialRampToValueAtTime(0.01, audioContext.currentTime + 0.3);
+                    
+                    oscillator.start();
+                    oscillator.stop(audioContext.currentTime + 0.3);
+                }, index * 100);
+            });
+        }
+
+        // Initialisation
+        createWheel();
+        spinBtn.addEventListener('click', spinWheel);
+        
+        // Permettre de cliquer sur la roue aussi
+        wheel.addEventListener('click', (e) => {
+            if (!spinning) {
+                spinWheel();
+            }
+        });
+    </script>
+</body>
+</html>
