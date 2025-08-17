@@ -1,0 +1,551 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Tirage au Sort - Les Tambours d'Ivry</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Fredoka+One:wght@400&family=Open+Sans:wght@600&display=swap');
+        
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Open Sans', sans-serif;
+            background: linear-gradient(135deg, #1a1a1a 0%, #2d1810 50%, #1a1a1a 100%);
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            color: white;
+            overflow-x: hidden;
+        }
+
+        .header {
+            text-align: center;
+            margin: 20px 0;
+            position: relative;
+        }
+
+        .title {
+            font-family: 'Fredoka One', cursive;
+            font-size: 2.5rem;
+            color: #FFD700;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.5);
+            margin-bottom: 10px;
+            display: inline-block;
+            position: relative;
+        }
+
+        .drum-right {
+            position: absolute;
+            top: 50%;
+            right: -60px;
+            transform: translateY(-50%);
+            font-size: 2.5rem;
+            animation: drumPulse 1.5s ease-in-out infinite;
+        }
+
+        @keyframes drumPulse {
+            0%, 70%, 100% { 
+                transform: translateY(-50%) scale(1);
+            }
+            15% { 
+                transform: translateY(-50%) scale(1.2);
+            }
+        }
+
+        .subtitle {
+            font-size: 1.2rem;
+            color: #ff4444;
+            font-weight: 600;
+        }
+
+        .style-selector {
+            margin: 20px 0;
+            display: flex;
+            gap: 15px;
+            flex-wrap: wrap;
+            justify-content: center;
+        }
+
+        .style-btn {
+            padding: 10px 20px;
+            background: rgba(255,255,255,0.1);
+            border: 2px solid #FFD700;
+            border-radius: 25px;
+            color: white;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-weight: 600;
+        }
+
+        .style-btn.active {
+            background: #FFD700;
+            color: #333;
+        }
+
+        .style-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(255,215,0,0.4);
+        }
+
+        .main-container {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 40px;
+            max-width: 1200px;
+            margin: 20px;
+        }
+
+        /* Machine à sous */
+        .slot-machine {
+            background: linear-gradient(145deg, #2a2a2a, #1a1a1a);
+            border: 8px solid #FFD700;
+            border-radius: 20px;
+            padding: 40px;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.5);
+            display: none;
+            text-align: center;
+        }
+
+        .slot-machine.active {
+            display: block;
+        }
+
+        .single-slot {
+            width: 300px;
+            height: 400px;
+            background: #333;
+            border: 6px solid #ff4444;
+            border-radius: 20px;
+            overflow: hidden;
+            position: relative;
+            margin: 0 auto 30px;
+        }
+
+        .slot-window {
+            position: absolute;
+            top: 50%;
+            left: 0;
+            right: 0;
+            height: 100px;
+            transform: translateY(-50%);
+            background: rgba(255,215,0,0.2);
+            border-top: 3px solid #FFD700;
+            border-bottom: 3px solid #FFD700;
+            z-index: 10;
+        }
+
+        .slot-reel {
+            position: absolute;
+            width: 100%;
+            transition: transform 5s cubic-bezier(0.1, 0.7, 0.3, 1);
+        }
+
+        .slot-item {
+            height: 100px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 16px;
+            font-weight: bold;
+            text-align: center;
+            border-bottom: 2px solid #555;
+            padding: 15px;
+            background: linear-gradient(45deg, #ff4444, #ff6666);
+            color: white;
+        }
+
+        .slot-item:nth-child(4n+2) {
+            background: linear-gradient(45deg, #FFD700, #FFED4E);
+            color: #333;
+        }
+
+        .slot-item:nth-child(4n+3) {
+            background: linear-gradient(45deg, #333, #555);
+            color: white;
+        }
+
+        .slot-item:nth-child(4n) {
+            background: linear-gradient(45deg, #ffffff, #f0f0f0);
+            color: #333;
+        }
+
+        /* Cartes */
+        .cards-container {
+            display: none;
+            grid-template-columns: repeat(6, 1fr);
+            gap: 15px;
+            max-width: 750px;
+        }
+
+        .cards-container.active {
+            display: grid;
+        }
+
+        .card {
+            width: 120px;
+            height: 80px;
+            background: transparent;
+            border: 3px solid #FFD700;
+            border-radius: 15px;
+            cursor: pointer;
+            transition: transform 0.6s;
+            transform-style: preserve-3d;
+            position: relative;
+        }
+
+        .card:hover {
+            transform: translateY(-5px) scale(1.05);
+            box-shadow: 0 10px 25px rgba(255,68,68,0.4);
+        }
+
+        .card.flipped {
+            transform: rotateY(180deg);
+        }
+
+        .card.flipped:hover {
+            transform: rotateY(180deg) translateY(-5px) scale(1.05);
+        }
+
+        .card-front, .card-back {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            backface-visibility: hidden;
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            text-align: center;
+            padding: 8px;
+        }
+
+        .card-front {
+            background: linear-gradient(145deg, #333, #555);
+            color: #FFD700;
+            font-size: 24px;
+        }
+
+        .card-back {
+            background: linear-gradient(145deg, #ff4444, #ff6666);
+            color: white;
+            transform: rotateY(180deg);
+            font-size: 11px;
+            font-weight: bold;
+        }
+
+        .cards-controls {
+            text-align: center;
+            display: none;
+        }
+
+        .spin-button {
+            padding: 15px 40px;
+            font-size: 1.5rem;
+            font-family: 'Fredoka One', cursive;
+            background: linear-gradient(135deg, #ff4444, #ff6666);
+            color: white;
+            border: none;
+            border-radius: 50px;
+            cursor: pointer;
+            box-shadow: 0 5px 15px rgba(255,68,68,0.4);
+            transition: all 0.3s ease;
+            text-transform: uppercase;
+        }
+
+        .spin-button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(255,68,68,0.6);
+        }
+
+        .spin-button:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        .result-display {
+            background: linear-gradient(135deg, #ff4444, #ff6666);
+            color: white;
+            padding: 20px;
+            border-radius: 15px;
+            font-size: 1.8rem;
+            font-weight: 600;
+            text-align: center;
+            min-height: 80px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 0 5px 15px rgba(255,68,68,0.3);
+            margin-top: 20px;
+        }
+
+        .history {
+            background: rgba(255,255,255,0.1);
+            backdrop-filter: blur(10px);
+            border-radius: 20px;
+            padding: 20px;
+            min-width: 400px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+            border: 2px solid rgba(255,215,0,0.3);
+        }
+
+        .history h3 {
+            font-family: 'Fredoka One', cursive;
+            color: #FFD700;
+            font-size: 1.2rem;
+            margin-bottom: 15px;
+            text-align: center;
+        }
+
+        .history-list {
+            max-height: 200px;
+            overflow-y: auto;
+        }
+
+        .history-item {
+            background: rgba(255,255,255,0.1);
+            margin-bottom: 8px;
+            padding: 10px 15px;
+            border-radius: 10px;
+            font-size: 0.9rem;
+            border-left: 4px solid #ff4444;
+        }
+
+        @media (max-width: 768px) {
+            .single-slot {
+                width: 250px;
+                height: 350px;
+            }
+
+            .cards-container {
+                grid-template-columns: repeat(3, 1fr);
+            }
+
+            .card {
+                width: 100px;
+                height: 70px;
+                font-size: 10px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <h1 class="title">
+            Tirage au Sort
+            <span class="drum-right">🥁</span>
+        </h1>
+        <p class="subtitle">Les Tambours d'Ivry</p>
+    </div>
+
+    <div class="style-selector">
+        <button class="style-btn active" onclick="changeMode('slot')">🎰 Machine à Sous</button>
+        <button class="style-btn" onclick="changeMode('cards')">🃏 Cartes</button>
+    </div>
+
+    <div class="main-container">
+        <!-- Machine à sous -->
+        <div class="slot-machine active" id="slotMachine">
+            <div class="single-slot">
+                <div class="slot-window"></div>
+                <div class="slot-reel" id="mainReel"></div>
+            </div>
+            <button class="spin-button" onclick="spinSlots()">🎰 LANCER ! 🎵</button>
+            <div class="result-display" id="slotResult"></div>
+        </div>
+
+        <!-- Cartes -->
+        <div class="cards-container" id="cardsContainer"></div>
+        <div class="cards-controls" id="cardsControls">
+            <button class="spin-button" onclick="resetCards()">🃏 MÉLANGER LES CARTES ! 🎵</button>
+            <div class="result-display" id="cardResult">Mélangez et choisissez une carte !</div>
+        </div>
+
+        <!-- Historique -->
+        <div class="history">
+            <h3>📝 Historique</h3>
+            <div class="history-list" id="historyList">
+                <p style="text-align: center; opacity: 0.7;">Aucun morceau joué pour le moment</p>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Liste des morceaux des Tambours d'Ivry
+        const songs = [
+            "5+5", "Potente", "Décollage", "6-8", "Afro",
+            "Afro 2", "Aqui e agora", "Arc-en-ciel", "Claquage", "Dida",
+            "Dubfire", "Fiesta", "Funk Oro", "Gato do Pelo", "Gilmario",
+            "Grenade", "Igesha", "John Doe", "Jorge", "Malé",
+            "Mambo", "Pipi", "Reggae Boom", "Rutabaga", "Samba Afro",
+            "Samba Duro", "Samba Duro 2", "Samba Reggae Original", "Soleil"
+        ];
+
+        let history = [];
+        let currentMode = 'slot';
+        let spinning = false;
+
+        // Changer de mode
+        function changeMode(mode) {
+            currentMode = mode;
+            
+            // Masquer tous les conteneurs
+            document.getElementById('slotMachine').classList.remove('active');
+            document.getElementById('cardsContainer').classList.remove('active');
+            document.getElementById('cardsControls').style.display = 'none';
+            
+            // Afficher le bon conteneur
+            if (mode === 'slot') {
+                document.getElementById('slotMachine').classList.add('active');
+                initSlots();
+            } else if (mode === 'cards') {
+                document.getElementById('cardsContainer').classList.add('active');
+                document.getElementById('cardsControls').style.display = 'block';
+                initCards();
+            }
+            
+            // Mettre à jour les boutons
+            document.querySelectorAll('.style-btn').forEach(btn => btn.classList.remove('active'));
+            event.target.classList.add('active');
+        }
+
+        // Machine à sous
+        function initSlots() {
+            const reel = document.getElementById('mainReel');
+            reel.innerHTML = '';
+            
+            // Créer plusieurs répétitions pour l'effet de défilement
+            for (let repeat = 0; repeat < 8; repeat++) {
+                songs.forEach((song, index) => {
+                    const item = document.createElement('div');
+                    item.className = 'slot-item';
+                    item.textContent = song;
+                    item.setAttribute('data-song', song);
+                    item.setAttribute('data-position', repeat * songs.length + index);
+                    reel.appendChild(item);
+                });
+            }
+        }
+
+        function spinSlots() {
+            if (spinning) return;
+            spinning = true;
+            
+            const selectedSong = songs[Math.floor(Math.random() * songs.length)];
+            const reel = document.getElementById('mainReel');
+            
+            // Remettre la roue en position initiale sans animation
+            reel.style.transition = 'none';
+            reel.style.transform = 'translateY(0px)';
+            reel.offsetHeight;
+            reel.style.transition = 'transform 5s cubic-bezier(0.1, 0.7, 0.3, 1)';
+            
+            // Trouver la position finale
+            const allItems = reel.querySelectorAll('.slot-item');
+            let targetElement = null;
+            
+            for (let i = allItems.length - 1; i >= allItems.length - songs.length * 3; i--) {
+                if (allItems[i].getAttribute('data-song') === selectedSong) {
+                    targetElement = allItems[i];
+                    break;
+                }
+            }
+            
+            if (targetElement) {
+                const elementPosition = parseInt(targetElement.getAttribute('data-position'));
+                const targetY = -(elementPosition * 100 - 150);
+                reel.style.transform = `translateY(${targetY}px)`;
+                
+                setTimeout(() => {
+                    document.getElementById('slotResult').textContent = selectedSong;
+                    addToHistory(selectedSong);
+                    spinning = false;
+                }, 5000);
+            }
+        }
+
+        // Cartes
+        function initCards() {
+            const container = document.getElementById('cardsContainer');
+            container.innerHTML = '';
+            
+            // Mélanger les morceaux aléatoirement
+            const shuffledSongs = [...songs].sort(() => Math.random() - 0.5);
+            
+            shuffledSongs.forEach((song, index) => {
+                const card = document.createElement('div');
+                card.className = 'card';
+                card.onclick = () => flipCard(card, song);
+                
+                const front = document.createElement('div');
+                front.className = 'card-front';
+                front.textContent = '🎵';
+                
+                const back = document.createElement('div');
+                back.className = 'card-back';
+                back.textContent = song;
+                
+                card.appendChild(front);
+                card.appendChild(back);
+                container.appendChild(card);
+            });
+        }
+
+        function flipCard(card, song) {
+            if (card.classList.contains('flipped')) return;
+            
+            card.classList.add('flipped');
+            document.getElementById('cardResult').textContent = song;
+            addToHistory(song);
+        }
+
+        function resetCards() {
+            document.querySelectorAll('.card').forEach(card => {
+                card.classList.remove('flipped');
+                card.style.pointerEvents = 'auto';
+            });
+            document.getElementById('cardResult').textContent = 'Mélangez et choisissez une carte !';
+            initCards();
+        }
+
+        // Historique
+        function addToHistory(song) {
+            const now = new Date();
+            const time = now.toLocaleTimeString('fr-FR', { 
+                hour: '2-digit', 
+                minute: '2-digit' 
+            });
+            
+            history.unshift({ song, time });
+            if (history.length > 10) history.pop();
+            
+            updateHistoryDisplay();
+        }
+
+        function updateHistoryDisplay() {
+            const historyList = document.getElementById('historyList');
+            
+            if (history.length === 0) {
+                historyList.innerHTML = '<p style="text-align: center; opacity: 0.7;">Aucun morceau joué pour le moment</p>';
+                return;
+            }
+            
+            historyList.innerHTML = history.map((item, index) => 
+                `<div class="history-item">
+                    <strong>${history.length - index}.</strong> ${item.song}
+                </div>`
+            ).join('');
+        }
+
+        // Initialisation
+        initSlots();
+    </script>
+</body>
+</html>
