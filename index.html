@@ -319,19 +319,46 @@
         }
 
         @media (max-width: 768px) {
+            .title {
+                font-size: 1.8rem;
+            }
+
+            .drum-right {
+                right: -45px;
+                font-size: 2rem;
+            }
+
             .single-slot {
-                width: 250px;
-                height: 350px;
+                width: 260px;
+                height: 300px;
             }
 
             .cards-container {
                 grid-template-columns: repeat(3, 1fr);
+                gap: 10px;
+                max-width: 100%;
             }
 
             .card {
-                width: 100px;
-                height: 70px;
-                font-size: 10px;
+                width: 90px;
+                height: 60px;
+                font-size: 9px;
+            }
+
+            .spin-button {
+                padding: 10px 25px;
+                font-size: 1rem;
+            }
+
+            .result-display {
+                font-size: 1.1rem;
+                padding: 12px;
+                min-height: 50px;
+            }
+
+            .main-container {
+                gap: 15px;
+                margin: 5px;
             }
         }
     </style>
